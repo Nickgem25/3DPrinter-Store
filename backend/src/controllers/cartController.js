@@ -10,7 +10,7 @@ async function getOrCreateCart(userId) {
     return carts[0].cart_id;
 }
 
-// GET /api/cart - the logged-in user's cart items
+// GET /api/cart - the logged-in user's cart items, plus the cart total
 exports.getCart = async (req, res) => {
     try {
         const cartId = await getOrCreateCart(req.user.user_id);
@@ -23,7 +23,17 @@ exports.getCart = async (req, res) => {
              WHERE ci.cart_id = ?`,
             [cartId]
         );
-        res.json({ cart_id: cartId, items });
+
+        // Total in cents (whole numbers) to avoid decimal rounding errors.
+        // Products that are no longer for sale are not counted.
+        let totalCents = 0;
+        for (const item of items) {
+            if (item.is_active) {
+                totalCents += Math.round(Number(item.price) * 100) * item.quantity;
+            }
+        }
+
+        res.json({ cart_id: cartId, items, total: totalCents / 100 });
     } catch (error) {
         console.error('Get cart failed:', error);
         res.status(500).json({ error: 'Failed to retrieve cart' });
@@ -34,21 +44,17 @@ exports.getCart = async (req, res) => {
 exports.addToCart = async (req, res) => {
     const body = req.body || {};
 
-    // Number() turns "3" into 3, and anything weird into NaN.
-    // If quantity is not sent at all, we default to 1.
     const productId = Number(body.product_id);
     const qty = body.quantity === undefined ? 1 : Number(body.quantity);
 
     if (!Number.isInteger(productId) || productId < 1) {
         return res.status(400).json({ error: 'A valid product_id is required.' });
     }
-    // The old code accepted negative numbers, which could shrink a cart below zero.
     if (!Number.isInteger(qty) || qty < 1) {
         return res.status(400).json({ error: 'quantity must be a whole number of 1 or more.' });
     }
 
     try {
-        // 1. Does the product exist and is it still for sale?
         const [products] = await db.query(
             'SELECT stock_quantity, is_active FROM product WHERE product_id = ?',
             [productId]
@@ -59,8 +65,7 @@ exports.addToCart = async (req, res) => {
 
         const cartId = await getOrCreateCart(req.user.user_id);
 
-        // 2. Would the cart exceed the stock? (Friendly early warning only.
-        //    The REAL stock check happens inside the checkout transaction.)
+        // Friendly early warning only. The REAL stock check is inside checkout.
         const [existing] = await db.query(
             'SELECT quantity FROM cartitem WHERE cart_id = ? AND product_id = ?',
             [cartId, productId]
@@ -74,8 +79,7 @@ exports.addToCart = async (req, res) => {
             });
         }
 
-        // 3. "Upsert": insert a new row, or if (cart_id, product_id) already exists
-        //    (thanks to the UNIQUE key), add to its quantity instead.
+        // "Upsert": insert a new row, or add to the quantity if (cart_id, product_id) exists
         await db.query(
             `INSERT INTO cartitem (cart_id, product_id, quantity)
              VALUES (?, ?, ?)
@@ -90,6 +94,58 @@ exports.addToCart = async (req, res) => {
     }
 };
 
+// PUT /api/cart/items/:id - SET an item's quantity (id = cart_item_id)
+// Body: { "quantity": 3 }
+// Difference from POST: POST adds to the current quantity, PUT replaces it.
+// This is what the "+" / "-" buttons in a cart page will call.
+exports.updateCartItem = async (req, res) => {
+    const itemId = Number(req.params.id);
+    const qty = Number((req.body || {}).quantity);
+
+    if (!Number.isInteger(itemId) || itemId < 1) {
+        return res.status(400).json({ error: 'Invalid cart item id.' });
+    }
+    if (!Number.isInteger(qty) || qty < 1) {
+        return res.status(400).json({
+            error: 'quantity must be a whole number of 1 or more. To remove an item, use DELETE.'
+        });
+    }
+
+    try {
+        const cartId = await getOrCreateCart(req.user.user_id);
+
+        // "AND ci.cart_id = ?" means users can only change items in THEIR OWN cart
+        const [rows] = await db.query(
+            `SELECT p.stock_quantity, p.is_active
+             FROM cartitem ci
+             JOIN product p ON ci.product_id = p.product_id
+             WHERE ci.cart_item_id = ? AND ci.cart_id = ?`,
+            [itemId, cartId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Cart item not found.' });
+        }
+        if (!rows[0].is_active) {
+            return res.status(400).json({ error: 'This product is no longer available.' });
+        }
+        if (qty > rows[0].stock_quantity) {
+            return res.status(400).json({ error: `Only ${rows[0].stock_quantity} in stock.` });
+        }
+
+        await db.query('UPDATE cartitem SET quantity = ? WHERE cart_item_id = ? AND cart_id = ?', [
+            qty,
+            itemId,
+            cartId
+        ]);
+
+        res.json({ message: 'Cart updated.', cart_item_id: itemId, quantity: qty });
+    } catch (error) {
+        console.error('Update cart item failed:', error);
+        res.status(500).json({ error: 'Failed to update cart item' });
+    }
+};
+
 // DELETE /api/cart/items/:id - remove one item (id = cart_item_id)
 exports.removeFromCart = async (req, res) => {
     const itemId = Number(req.params.id);
@@ -100,7 +156,6 @@ exports.removeFromCart = async (req, res) => {
     try {
         const cartId = await getOrCreateCart(req.user.user_id);
 
-        // "AND cart_id = ?" makes sure users can only delete items from THEIR OWN cart.
         const [result] = await db.query(
             'DELETE FROM cartitem WHERE cart_item_id = ? AND cart_id = ?',
             [itemId, cartId]
