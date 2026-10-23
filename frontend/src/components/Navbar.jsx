@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 
-// A component is just a function that returns what to draw (JSX looks like HTML).
-// <Link> works like <a href>, but switches page without reloading the browser.
 export default function Navbar() {
     const { user, logout } = useAuth();
 
@@ -11,9 +9,12 @@ export default function Navbar() {
             <Link to="/" className="brand">3D Print Store</Link>
 
             <div className="nav-links">
-                {/* {condition ? A : B} = "if logged in show A, otherwise show B" */}
                 {user ? (
                     <>
+                        <Link to="/cart">Cart</Link>
+                        <Link to="/orders">Orders</Link>
+                        {/* Only admins see this link */}
+                        {user.role === 'admin' && <Link to="/admin/products">Admin</Link>}
                         <span>Hi, {user.full_name}</span>
                         <button onClick={logout}>Log out</button>
                     </>

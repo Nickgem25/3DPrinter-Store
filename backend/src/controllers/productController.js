@@ -49,6 +49,19 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
+// GET /api/products/admin/all - EVERY product, including hidden ones (admin only)
+// The public list only shows active products, so without this an admin could never
+// see a hidden product again to restore it.
+exports.getAllProductsAdmin = async (req, res) => {
+    try {
+        const [products] = await db.query(`${PRODUCT_SELECT} ORDER BY p.product_id`);
+        res.json(products);
+    } catch (error) {
+        console.error('Fetch admin products failed:', error);
+        res.status(500).json({ error: 'Failed to fetch products' });
+    }
+};
+
 // GET /api/products/:id - one active product
 exports.getProductById = async (req, res) => {
     try {

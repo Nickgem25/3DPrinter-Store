@@ -1,0 +1,37 @@
+.admin-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+.admin-form h3 { grid-column: 1 / -1; margin: 0; }
+.admin-form textarea {
+    grid-column: 1 / -1;
+    padding: 8px;
+    border: 1px solid #cbd2d9;
+    border-radius: 6px;
+    font: inherit;
+}
+.admin-form .actions { grid-column: 1 / -1; }
+
+.actions { display: flex; gap: 8px; }
+td.actions { display: table-cell; white-space: nowrap; }
+td.actions button + button { margin-left: 8px; }
+
+.secondary { background: #7b8794; }
+tr.inactive td { opacity: 0.5; }
+
+/* Tabs at the top of the admin pages */
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.admin-tabs a {
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #e4e7eb;
+    color: #1f2933;
+    text-decoration: none;
+}
+/* React Router adds the class "active" to the NavLink of the current page */
+.admin-tabs a.active { background: #2f80ed; color: #fff; }

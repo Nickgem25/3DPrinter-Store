@@ -1,0 +1,12 @@
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.badge-pending { background: #fff3cd; color: #8a6d00; }
+.badge-paid { background: #d6e9ff; color: #0b4f9c; }
+.badge-shipped { background: #e0d4fc; color: #5b2fb3; }
+.badge-delivered { background: #d4f1dc; color: #1e7a3a; }
+.badge-cancelled { background: #f8d7da; color: #a12834; }
