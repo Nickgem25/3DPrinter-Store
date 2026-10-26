@@ -13,6 +13,7 @@ const emptyForm = {
     unit_price: '',
     stock_quantity: '',
     description: '',
+    image_url: '',
     brand_id: '',
     category_id: ''
 };
@@ -58,6 +59,7 @@ export default function AdminProducts() {
             unit_price: product.unit_price,
             stock_quantity: product.stock_quantity,
             description: product.description || '',
+            image_url: product.image_url || '',
             brand_id: product.brand_id ?? '',
             category_id: product.category_id ?? ''
         });
@@ -83,6 +85,7 @@ export default function AdminProducts() {
             unit_price: form.unit_price,
             stock_quantity: form.stock_quantity,
             description: form.description,
+            image_url: form.image_url,
             brand_id: form.brand_id || null, // "" (nothing chosen) becomes null
             category_id: form.category_id || null
         };
@@ -122,6 +125,34 @@ export default function AdminProducts() {
         }
     }
 
+    async function permanentlyDelete(product) {
+        const confirmed = window.confirm(
+            `PERMANENTLY DELETE "${product.product_name}"?\n\n` +
+            `This cannot be undone.\n` +
+            `Existing order history will be preserved.\n` +
+            `The product will also be removed from customer carts.`
+        );
+
+        if (!confirmed) return;
+
+        setError('');
+        setMessage('');
+
+        try {
+            await api.delete(`/products/${product.product_id}/permanent`);
+
+            setMessage(`"${product.product_name}" permanently deleted.`);
+
+            if (editingId === product.product_id) {
+                cancelEdit();
+            }
+
+            await loadProducts();
+        } catch (err) {
+            handleError(err);
+        }
+    }
+
     return (
         <div>
             <h1>Manage products</h1>
@@ -152,7 +183,12 @@ export default function AdminProducts() {
                 </select>
 
                 <textarea name="description" rows={2} placeholder="Description" value={form.description} onChange={updateField} />
-
+                <input
+                    name="image_url"
+                    placeholder="Image URL or path (e.g. /product-images/cat26-001.jpg)"
+                    value={form.image_url}
+                    onChange={updateField}
+                />
                 <div className="actions">
                     <button type="submit">{editingId ? 'Save changes' : 'Add product'}</button>
                     {editingId && <button type="button" className="secondary" onClick={cancelEdit}>Cancel</button>}
@@ -185,9 +221,22 @@ export default function AdminProducts() {
                                 <td>{p.stock_quantity}</td>
                                 <td>{p.is_active ? 'Visible' : 'Hidden'}</td>
                                 <td className="actions">
-                                    <button onClick={() => startEdit(p)}>Edit</button>
-                                    <button className={p.is_active ? 'danger' : 'secondary'} onClick={() => toggleActive(p)}>
+                                    <button onClick={() => startEdit(p)}>
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        className={p.is_active ? 'danger' : 'secondary'}
+                                        onClick={() => toggleActive(p)}
+                                    >
                                         {p.is_active ? 'Hide' : 'Restore'}
+                                    </button>
+
+                                    <button
+                                        className="danger"
+                                        onClick={() => permanentlyDelete(p)}
+                                    >
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

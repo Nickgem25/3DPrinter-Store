@@ -67,7 +67,18 @@ export default function OrderDetails() {
                 <tbody>
                     {order.items.map((item) => (
                         <tr key={item.order_item_id}>
-                            <td>{item.product_name}</td>
+                            <td>
+                                {item.product_name}
+
+                                {Boolean(item.is_deleted) && (
+                                    <span
+                                        className="muted"
+                                        style={{ display: 'block', marginTop: '4px' }}
+                                    >
+                                        Product deleted
+                                    </span>
+                                )}
+                            </td>
                             <td>{item.sku}</td>
                             {/* This is the price the customer actually paid (saved at checkout),
                                 not the product's current price. */}

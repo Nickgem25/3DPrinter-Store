@@ -13,7 +13,7 @@ const isNonNegativeInteger = (v) =>
 // The columns both "get" endpoints return. brand_id and category_id are included
 // so an admin edit form knows which brand/category is currently selected.
 const PRODUCT_SELECT = `
-    SELECT p.product_id, p.sku, p.product_name, p.description,
+    SELECT p.product_id, p.sku, p.product_name, p.description, p.image_url,
            p.unit_price, p.stock_quantity, p.is_active,
            p.brand_id, b.brand_name,
            p.category_id, c.category_name
@@ -83,7 +83,7 @@ exports.getProductById = async (req, res) => {
 
 // POST /api/products - create a product (admin only)
 exports.createProduct = async (req, res) => {
-    const { product_name, sku, unit_price, stock_quantity, description, brand_id, category_id } =
+    const { product_name, sku, unit_price, stock_quantity, description, image_url, brand_id, category_id } =
         req.body || {};
 
     // sku is NOT NULL + UNIQUE in the table, so it must be required here too
@@ -99,9 +99,18 @@ exports.createProduct = async (req, res) => {
 
     try {
         const [result] = await db.query(
-            `INSERT INTO product (product_name, sku, unit_price, stock_quantity, description, brand_id, category_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [product_name, sku, unit_price, stock_quantity, description || '', brand_id || null, category_id || null]
+            `INSERT INTO product (product_name, sku, unit_price, stock_quantity, description, image_url, brand_id, category_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                product_name,
+                sku,
+                unit_price,
+                stock_quantity,
+                description || '',
+                image_url || null,
+                brand_id || null,
+                category_id || null
+            ]
         );
 
         res.status(201).json({
@@ -116,7 +125,7 @@ exports.createProduct = async (req, res) => {
 // PUT /api/products/:id - partial update (admin only). Send only the fields to change.
 exports.updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { product_name, sku, unit_price, stock_quantity, description, brand_id, category_id, is_active } =
+    const { product_name, sku, unit_price, stock_quantity, description, image_url, brand_id, category_id, is_active } =
         req.body || {};
 
     // Only validate fields that were actually sent
@@ -144,6 +153,7 @@ exports.updateProduct = async (req, res) => {
                  unit_price     = COALESCE(?, unit_price),
                  stock_quantity = COALESCE(?, stock_quantity),
                  description    = COALESCE(?, description),
+                 image_url      = COALESCE(?, image_url),
                  brand_id       = COALESCE(?, brand_id),
                  category_id    = COALESCE(?, category_id),
                  is_active      = COALESCE(?, is_active)
@@ -154,6 +164,7 @@ exports.updateProduct = async (req, res) => {
                 unit_price ?? null,
                 stock_quantity ?? null,
                 description ?? null,
+                image_url ?? null,
                 brand_id ?? null,
                 category_id ?? null,
                 is_active === undefined ? null : (is_active ? 1 : 0),
@@ -189,5 +200,37 @@ exports.deleteProduct = async (req, res) => {
     } catch (error) {
         console.error('Delete product failed:', error);
         res.status(500).json({ error: 'Failed to delete product' });
+    }
+};
+
+exports.deleteProductPermanently = async (req, res) => {
+    const productId = Number(req.params.id);
+
+    if (!Number.isInteger(productId) || productId < 1) {
+        return res.status(400).json({
+            error: 'Invalid product ID.'
+        });
+    }
+
+    try {
+        const [result] = await db.query(
+            'DELETE FROM product WHERE product_id = ?',
+            [productId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Product not found.'
+            });
+        }
+
+        res.json({
+            message: 'Product permanently deleted.'
+        });
+    } catch (error) {
+        console.error('Permanent deletion failed:', error);
+        res.status(500).json({
+            error: 'Failed to permanently delete product.'
+        });
     }
 };

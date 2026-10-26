@@ -5,8 +5,8 @@ import { useAuth } from '../AuthContext';
 
 // There are no product photos yet, so each card shows an emoji picked from the
 // category name. (Order matters: "Resin 3D Printers" must match 'resin' before 'printer'.)
-function categoryIcon(name = '') {
-    const n = name.toLowerCase();
+function categoryIcon(name) {
+    const n = (name ?? '').toLowerCase();
     if (n.includes('filament')) return '🧵';
     if (n.includes('resin')) return '🧪';
     if (n.includes('printer')) return '🖨️';
@@ -98,7 +98,13 @@ export default function Products() {
             <div className="grid">
                 {visibleProducts.map((p) => (
                     <div className="card" key={p.product_id}>
-                        <div className="card-media">{categoryIcon(p.category_name)}</div>
+                        <div className="card-media">
+                            {p.image_url ? (
+                                <img src={p.image_url} alt={p.product_name} />
+                            ) : (
+                                <div className="card-emoji">{categoryIcon(p.category_name)}</div>
+                            )}
+                        </div>
                         <div className="card-body">
                             <h3>{p.product_name}</h3>
                             <p className="muted">{p.brand_name} · {p.category_name}</p>

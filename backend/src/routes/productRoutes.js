@@ -16,5 +16,10 @@ router.get('/:id', productController.getProductById);
 router.post('/', verifyToken, checkRole(['admin']), productController.createProduct);
 router.put('/:id', verifyToken, checkRole(['admin']), productController.updateProduct);
 router.delete('/:id', verifyToken, checkRole(['admin']), productController.deleteProduct);
-
+router.delete(
+    '/:id/permanent',
+    verifyToken,
+    checkRole(['admin']),
+    productController.deleteProductPermanently
+);
 module.exports = router;

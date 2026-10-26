@@ -62,7 +62,8 @@ exports.createOrder = async (req, res) => {
         // ORDER BY keeps the lock order consistent, which avoids deadlocks.
         const [cartItems] = await connection.query(
             `SELECT ci.product_id, ci.quantity,
-                    p.product_name, p.unit_price, p.stock_quantity, p.is_active
+            p.product_name, p.sku,
+            p.unit_price, p.stock_quantity, p.is_active
              FROM cartitem ci
              JOIN product p ON ci.product_id = p.product_id
              WHERE ci.cart_id = ?
@@ -106,9 +107,20 @@ exports.createOrder = async (req, res) => {
                 [orderId, item.product_id, item.quantity, item.unit_price]
             );
 
+
             await connection.query(
-                'UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?',
-                [item.quantity, item.product_id]
+                `INSERT INTO orderitem
+                 (order_id, product_id, product_name_at_purchase,
+                  sku_at_purchase, quantity, price_at_purchase)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    orderId,
+                    item.product_id,
+                    item.product_name,
+                    item.sku,
+                    item.quantity,
+                    item.unit_price
+                ]
             );
         }
 
@@ -179,12 +191,21 @@ exports.getOrderById = async (req, res) => {
             return res.status(404).json({ error: 'Order not found.' });
         }
 
+
         const [items] = await db.query(
-            `SELECT oi.order_item_id, oi.product_id, p.product_name, p.sku,
-                    oi.quantity, oi.price_at_purchase,
-                    (oi.quantity * oi.price_at_purchase) AS line_total
+            `SELECT
+                oi.order_item_id,
+                oi.product_id,
+                oi.product_name_at_purchase AS product_name,
+                oi.sku_at_purchase AS sku,
+                oi.quantity,
+                oi.price_at_purchase,
+                (oi.quantity * oi.price_at_purchase) AS line_total,
+            CASE
+                WHEN oi.product_id IS NULL THEN 1
+                ELSE 0
+            END AS is_deleted
              FROM orderitem oi
-             JOIN product p ON oi.product_id = p.product_id
              WHERE oi.order_id = ?`,
             [orderId]
         );
