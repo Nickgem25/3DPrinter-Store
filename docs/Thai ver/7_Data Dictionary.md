@@ -2,17 +2,20 @@
 
 เอกสารฉบับร่างนี้อ้างอิงชื่อตารางและคอลัมน์ที่ตรวจสอบจากโค้ด backend ปัจจุบัน รวมทั้งความสัมพันธ์ที่จัดทำไว้ก่อนหน้า **ประเภทข้อมูลที่ระบุว่า (ต้องตรวจสอบ) ไม่ใช่ผลจาก `SHOW CREATE TABLE`** และต้องยืนยันกับฐานข้อมูลจริงก่อนส่งงาน
 
+
 ## `user`
 
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `user_id` | INT (ต้องตรวจสอบ) | PK | รหัสผู้ใช้ |
-| `email` | VARCHAR (ต้องตรวจสอบ) | UNIQUE | อีเมลสำหรับเข้าสู่ระบบ; ไม่ซ้ำ |
-| `password_hash` | VARCHAR (ต้องตรวจสอบ) | — | รหัสผ่านที่ผ่านการแฮชด้วย bcrypt |
-| `full_name` | VARCHAR (ต้องตรวจสอบ) | — | ชื่อ-นามสกุล |
-| `phone` | VARCHAR (ต้องตรวจสอบ) | — | เบอร์โทรศัพท์ |
-| `address` | TEXT (ต้องตรวจสอบ) | — | ที่อยู่เริ่มต้น |
-| `role` | VARCHAR/ENUM (ต้องตรวจสอบ) | — | บทบาทบัญชี (customer/admin) |
+| `user_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique user identifier |
+| `email` | VARCHAR(255) | UNIQUE, NOT NULL | Account email address |
+| `password_hash` | VARCHAR(255) | NOT NULL | Hashed account password |
+| `full_name` | VARCHAR(100) | NOT NULL | User's full name |
+| `phone` | VARCHAR(20) | NULL, DEFAULT NULL | Contact phone number |
+| `address` | TEXT | NULL, DEFAULT NULL | User's address |
+| `role` | ENUM('customer','employee','admin') | NOT NULL, DEFAULT 'customer' | User account role |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Account creation timestamp |
+
 
 ## `brand`
 

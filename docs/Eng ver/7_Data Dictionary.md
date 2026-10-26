@@ -2,17 +2,20 @@
 
 This working draft uses table/column names verified in current backend code, plus previously configured relationships. **Any type marked (verify) is a hypothesis, not output from `SHOW CREATE TABLE`**; confirm against the live MariaDB database before submission.
 
+
 ## `user`
 
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `user_id` | INT (verify) | PK | User identifier |
-| `email` | VARCHAR (verify) | UNIQUE | Login email; unique in registration |
-| `password_hash` | VARCHAR (verify) | — | Bcrypt password hash |
-| `full_name` | VARCHAR (verify) | — | Full name |
-| `phone` | VARCHAR (verify) | — | Contact phone |
-| `address` | TEXT (verify) | — | Default address |
-| `role` | VARCHAR/ENUM (verify) | — | Account role (customer/admin) |
+| `user_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique user identifier |
+| `email` | VARCHAR(255) | UNIQUE, NOT NULL | Account email address |
+| `password_hash` | VARCHAR(255) | NOT NULL | Hashed account password |
+| `full_name` | VARCHAR(100) | NOT NULL | User's full name |
+| `phone` | VARCHAR(20) | NULL, DEFAULT NULL | Contact phone number |
+| `address` | TEXT | NULL, DEFAULT NULL | User's address |
+| `role` | ENUM('customer','employee','admin') | NOT NULL, DEFAULT 'customer' | User account role |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Account creation timestamp |
+
 
 ## `brand`
 
