@@ -2,102 +2,84 @@
 
 เอกสารฉบับร่างนี้อ้างอิงชื่อตารางและคอลัมน์ที่ตรวจสอบจากโค้ด backend ปัจจุบัน รวมทั้งความสัมพันธ์ที่จัดทำไว้ก่อนหน้า **ประเภทข้อมูลที่ระบุว่า (ต้องตรวจสอบ) ไม่ใช่ผลจาก `SHOW CREATE TABLE`** และต้องยืนยันกับฐานข้อมูลจริงก่อนส่งงาน
 
-
-## `user`
-
-| Attribute | Data Type | Constraints | Description |
+## `user` — ข้อมูลผู้ใช้งาน
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `user_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique user identifier |
-| `email` | VARCHAR(255) | UNIQUE, NOT NULL | Account email address |
-| `password_hash` | VARCHAR(255) | NOT NULL | Hashed account password |
-| `full_name` | VARCHAR(100) | NOT NULL | User's full name |
-| `phone` | VARCHAR(20) | NULL, DEFAULT NULL | Contact phone number |
-| `address` | TEXT | NULL, DEFAULT NULL | User's address |
-| `role` | ENUM('customer','employee','admin') | NOT NULL, DEFAULT 'customer' | User account role |
-| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Account creation timestamp |
+| `user_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำตัวผู้ใช้งาน |
+| `email` | VARCHAR(255) | UNIQUE, NOT NULL | อีเมลสำหรับเข้าสู่ระบบ |
+| `password_hash` | VARCHAR(255) | NOT NULL | รหัสผ่านที่ผ่านการแฮช |
+| `full_name` | VARCHAR(100) | NOT NULL | ชื่อ-นามสกุลของผู้ใช้งาน |
+| `phone` | VARCHAR(20) | NULL, DEFAULT NULL | หมายเลขโทรศัพท์ |
+| `address` | TEXT | NULL, DEFAULT NULL | ที่อยู่ของผู้ใช้งาน |
+| `role` | ENUM('customer','employee','admin') | NOT NULL, DEFAULT 'customer' | บทบาทของผู้ใช้งานในระบบ |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | วันและเวลาที่สร้างบัญชี |
 
-
-## `brand`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `brand` — ข้อมูลแบรนด์สินค้า
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `brand_id` | INT (ต้องตรวจสอบ) | PK | รหัสแบรนด์ |
-| `brand_name` | VARCHAR (ต้องตรวจสอบ) | — | ชื่อแบรนด์ |
+| `brand_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำแบรนด์สินค้า |
+| `brand_name` | VARCHAR(50) | UNIQUE, NOT NULL | ชื่อแบรนด์หรือผู้ผลิตสินค้า |
 
-## `category`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `category` — ข้อมูลหมวดหมู่สินค้า
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `category_id` | INT (ต้องตรวจสอบ) | PK | รหัสหมวดหมู่ |
-| `category_name` | VARCHAR (ต้องตรวจสอบ) | — | ชื่อหมวดหมู่ |
+| `category_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำหมวดหมู่สินค้า |
+| `category_name` | VARCHAR(50) | UNIQUE, NOT NULL | ชื่อหมวดหมู่สินค้า |
 
-## `product`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `product` — ข้อมูลสินค้า
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `product_id` | INT (ต้องตรวจสอบ) | PK | รหัสสินค้า |
-| `sku` | VARCHAR (ต้องตรวจสอบ) | UNIQUE | รหัส SKU ที่ไม่ซ้ำ |
-| `product_name` | VARCHAR (ต้องตรวจสอบ) | — | ชื่อสินค้า |
-| `description` | TEXT (ต้องตรวจสอบ) | — | รายละเอียดสินค้า |
-| `image_url` | VARCHAR/TEXT (ต้องตรวจสอบ) | — | พาธหรือ URL ของรูปสินค้า |
-| `unit_price` | DECIMAL(10,2) (ต้องตรวจสอบ) | — | ราคาขายปัจจุบัน |
-| `stock_quantity` | INT (ต้องตรวจสอบ) | — | จำนวนสินค้าคงคลัง |
-| `is_active` | TINYINT/BOOLEAN (ต้องตรวจสอบ) | — | สถานะการแสดงสินค้า |
-| `brand_id` | INT (ต้องตรวจสอบ) | FK → brand.brand_id | รหัสแบรนด์ที่เชื่อมโยง |
-| `category_id` | INT (ต้องตรวจสอบ) | FK → category.category_id | รหัสหมวดหมู่ที่เชื่อมโยง |
+| `product_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำสินค้า |
+| `sku` | VARCHAR(50) | UNIQUE, NOT NULL | รหัสสินค้าเฉพาะสำหรับการจัดการสินค้าคงคลัง |
+| `product_name` | VARCHAR(150) | NOT NULL | ชื่อสินค้า |
+| `description` | TEXT | NULL, DEFAULT NULL | รายละเอียดและคุณสมบัติของสินค้า |
+| `image_url` | VARCHAR(255) | NULL, DEFAULT NULL | ที่อยู่ URL หรือพาธของรูปภาพสินค้า |
+| `unit_price` | DECIMAL(10,2) | NOT NULL, CHECK (unit_price >= 0) | ราคาขายต่อหน่วย โดยต้องไม่ติดลบ |
+| `stock_quantity` | INT(11) | NOT NULL, DEFAULT 0, CHECK (stock_quantity >= 0) | จำนวนสินค้าคงคลัง โดยต้องไม่ติดลบ |
+| `brand_id` | INT(11) | FK → brand.brand_id, NULL, DEFAULT NULL | รหัสแบรนด์ของสินค้า |
+| `category_id` | INT(11) | FK → category.category_id, NULL, DEFAULT NULL | รหัสหมวดหมู่ของสินค้า |
+| `is_active` | TINYINT(1) | NOT NULL, DEFAULT 1 | สถานะการแสดงสินค้า โดย 1 = แสดงสินค้า และ 0 = ซ่อนสินค้า |
 
-## `cart`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `cart` — ข้อมูลตะกร้าสินค้า
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `cart_id` | INT (ต้องตรวจสอบ) | PK | รหัสตะกร้า |
-| `user_id` | INT (ต้องตรวจสอบ) | FK → user.user_id; UNIQUE (per application) | เจ้าของตะกร้า; หนึ่งตะกร้าประจำต่อผู้ใช้ |
+| `cart_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำตะกร้าสินค้า |
+| `user_id` | INT(11) | FK → user.user_id, UNIQUE, NOT NULL, ON DELETE CASCADE | รหัสผู้ใช้งานที่เป็นเจ้าของตะกร้าสินค้า |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | วันและเวลาที่สร้างตะกร้าสินค้า |
+| `updated_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP, ON UPDATE CURRENT_TIMESTAMP | วันและเวลาที่แก้ไขข้อมูลตะกร้าสินค้าล่าสุด |
 
-## `cartitem`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `cartitem` — ข้อมูลรายการสินค้าในตะกร้า
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `cart_item_id` | INT (ต้องตรวจสอบ) | PK | รหัสรายการในตะกร้า |
-| `cart_id` | INT (ต้องตรวจสอบ) | FK → cart.cart_id | รหัสตะกร้า |
-| `product_id` | INT (ต้องตรวจสอบ) | FK → product.product_id; ON DELETE CASCADE (previously configured) | รหัสสินค้า |
-| `quantity` | INT (ต้องตรวจสอบ) | — | จำนวนสินค้าที่เลือก |
+| `cart_item_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำรายการสินค้าในตะกร้า |
+| `cart_id` | INT(11) | FK → cart.cart_id, NOT NULL, ON DELETE CASCADE | รหัสตะกร้าสินค้าที่เก็บรายการนี้ |
+| `product_id` | INT(11) | FK → product.product_id, NOT NULL, ON DELETE CASCADE | รหัสสินค้าที่ถูกเพิ่มลงในตะกร้า |
+| `quantity` | INT(11) | NOT NULL, DEFAULT 1, CHECK (quantity > 0) | จำนวนสินค้าที่เลือก โดยต้องมากกว่า 0 |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | วันและเวลาที่เพิ่มรายการสินค้าในตะกร้า |
 
-## `order`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `order` — ข้อมูลคำสั่งซื้อ
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `order_id` | INT (ต้องตรวจสอบ) | PK | รหัสคำสั่งซื้อ |
-| `user_id` | INT (ต้องตรวจสอบ) | FK → user.user_id | รหัสผู้ซื้อ |
-| `order_date` | TIMESTAMP (ต้องตรวจสอบ) | — | วันเวลาที่สั่งซื้อ |
-| `total_amount` | DECIMAL(10,2) (ต้องตรวจสอบ) | — | ยอดรวมขณะชำระเงิน |
-| `shipping_address` | TEXT (ต้องตรวจสอบ) | — | ที่อยู่จัดส่งของคำสั่งซื้อนี้ |
-| `status` | ENUM (ต้องตรวจสอบ) | ENUM (as referenced in backend) | สถานะคำสั่งซื้อ: Pending/Paid/Shipped/Delivered/Cancelled |
+| `order_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำคำสั่งซื้อ |
+| `user_id` | INT(11) | FK → user.user_id, NOT NULL, ON DELETE CASCADE | รหัสผู้ใช้งานที่ทำรายการสั่งซื้อ |
+| `order_date` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | วันและเวลาที่สร้างคำสั่งซื้อ |
+| `total_amount` | DECIMAL(10,2) | NOT NULL | ยอดเงินรวมของคำสั่งซื้อ ณ เวลาที่ชำระเงิน |
+| `shipping_address` | TEXT | NOT NULL | ที่อยู่สำหรับจัดส่งสินค้าในคำสั่งซื้อนี้ |
+| `status` | ENUM('Pending','Paid','Shipped','Delivered','Cancelled') | NOT NULL, DEFAULT 'Pending' | สถานะปัจจุบันของคำสั่งซื้อ |
 
-## `orderitem`
-
-| แอตทริบิวต์ | ชนิดข้อมูล (รอยืนยัน) | คีย์ / ข้อจำกัดที่ทราบ | คำอธิบาย |
+## `orderitem` — ข้อมูลรายการสินค้าในคำสั่งซื้อ
+| แอตทริบิวต์ | ชนิดข้อมูล | คีย์ / ข้อกำหนด | คำอธิบาย |
 |---|---|---|---|
-| `order_item_id` | INT (ต้องตรวจสอบ) | PK | รหัสรายการสั่งซื้อ |
-| `order_id` | INT (ต้องตรวจสอบ) | FK → order.order_id | รหัสคำสั่งซื้อ |
-| `product_id` | INT (ต้องตรวจสอบ) | FK → product.product_id; ON DELETE SET NULL (previously configured) | รหัสสินค้าที่ซื้อ; อาจเป็น NULL หลังลบสินค้า |
-| `product_name_at_purchase` | VARCHAR (ต้องตรวจสอบ) | — | ชื่อสินค้าที่บันทึกเมื่อสั่งซื้อ |
-| `sku_at_purchase` | VARCHAR (ต้องตรวจสอบ) | — | SKU ที่บันทึกเมื่อสั่งซื้อ |
-| `quantity` | INT (ต้องตรวจสอบ) | — | จำนวนสินค้าที่ซื้อ |
-| `price_at_purchase` | DECIMAL(10,2) (ต้องตรวจสอบ) | — | ราคาต่อหน่วยเมื่อสั่งซื้อ |
+| `order_item_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | รหัสประจำรายการสินค้าในคำสั่งซื้อ |
+| `order_id` | INT(11) | FK → order.order_id, NOT NULL | รหัสคำสั่งซื้อที่รายการสินค้านี้สังกัด |
+| `product_id` | INT(11) | FK → product.product_id, NULL, DEFAULT NULL, ON DELETE SET NULL | รหัสสินค้าที่สั่งซื้อ โดยอาจเป็น NULL หลังจากลบสินค้าออกจากระบบ |
+| `quantity` | INT(11) | NOT NULL, CHECK (quantity > 0) | จำนวนสินค้าที่สั่งซื้อ โดยต้องมากกว่า 0 |
+| `price_at_purchase` | DECIMAL(10,2) | NOT NULL, CHECK (price_at_purchase >= 0) | ราคาต่อหน่วยที่บันทึกไว้ ณ เวลาสั่งซื้อ |
+| `product_name_at_purchase` | VARCHAR(150) | NULL, DEFAULT NULL | ชื่อสินค้าที่บันทึกไว้ ณ เวลาสั่งซื้อ |
+| `sku_at_purchase` | VARCHAR(50) | NULL, DEFAULT NULL | รหัส SKU ของสินค้าที่บันทึกไว้ ณ เวลาสั่งซื้อ |
 
-## การตรวจสอบก่อนส่งงาน
+**ข้อกำหนด UNIQUE แบบผสม (Composite UNIQUE Constraint):** ตาราง `cartitem` มีข้อกำหนด `UNIQUE (cart_id, product_id)` เพื่อป้องกันการบันทึกสินค้าชนิดเดียวกันซ้ำเป็นหลายรายการภายในตะกร้าเดียวกัน หากผู้ใช้งานเพิ่มสินค้าชนิดเดิม ระบบจะปรับปรุงจำนวนสินค้า (`quantity`) ของรายการที่มีอยู่แทนการสร้างรายการใหม่
 
-ใน DBeaver ให้รันคำสั่งต่อไปนี้ **ทีละคำสั่ง** แล้วใช้ผลลัพธ์เพื่อแก้ไขชนิดข้อมูล `NULL` / `NOT NULL`, `DEFAULT`, `AUTO_INCREMENT`, ดัชนี, `UNIQUE`, และกฎ `ON DELETE` ให้ตรงกับฐานข้อมูลจริง:
-
-```sql
-SHOW CREATE TABLE `user`;
-SHOW CREATE TABLE `brand`;
-SHOW CREATE TABLE `category`;
-SHOW CREATE TABLE `product`;
-SHOW CREATE TABLE `cart`;
-SHOW CREATE TABLE `cartitem`;
-SHOW CREATE TABLE `order`;
-SHOW CREATE TABLE `orderitem`;
-```
-
-**ข้อสังเกต:** โค้ดยืนยันว่า `cart.user_id` ออกแบบให้ไม่ซ้ำ และ `cartitem` ใช้ `ON DUPLICATE KEY UPDATE` กับคู่ `(cart_id, product_id)` แต่ต้องตรวจสอบการประกาศ constraint จริงใน MariaDB ด้วย. ไฟล์ `docs/Schema.md` เดิมอธิบาย 6 เอนทิตี ไม่ใช่โครงสร้าง 8 ตารางล่าสุด จึงไม่ควรใช้แทนการตรวจสอบ.
+**การรักษาประวัติคำสั่งซื้อ (Historical Order Preservation):**
+ตาราง `orderitem` ใช้ข้อกำหนด `ON DELETE SET NULL` สำหรับ Foreign Key `product_id` เพื่อรักษาข้อมูลรายการสั่งซื้อย้อนหลัง แม้ว่าสินค้านั้นจะถูกลบออกจากฐานข้อมูลอย่างถาวร โดยระบบจะกำหนดค่า `product_id` เป็น `NULL` แต่ยังคงเก็บชื่อสินค้า (`product_name_at_purchase`), รหัสสินค้า (`sku_at_purchase`), จำนวนสินค้า (`quantity`) และราคาขณะสั่งซื้อ (`price_at_purchase`) ไว้
+นอกจากนี้ Foreign Key `order_id` ไม่มีการกำหนด `ON DELETE CASCADE` ดังนั้นคำสั่งซื้อที่มีรายการสินค้าอ้างอิงอยู่จะไม่สามารถถูกลบออกได้โดยตรงตามข้อกำหนดความสัมพันธ์ของฐานข้อมูล

@@ -2,9 +2,7 @@
 
 This working draft uses table/column names verified in current backend code, plus previously configured relationships. **Any type marked (verify) is a hypothesis, not output from `SHOW CREATE TABLE`**; confirm against the live MariaDB database before submission.
 
-
 ## `user`
-
 | Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
 | `user_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique user identifier |
@@ -16,88 +14,67 @@ This working draft uses table/column names verified in current backend code, plu
 | `role` | ENUM('customer','employee','admin') | NOT NULL, DEFAULT 'customer' | User account role |
 | `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Account creation timestamp |
 
-
 ## `brand`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `brand_id` | INT (verify) | PK | Brand identifier |
-| `brand_name` | VARCHAR (verify) | — | Brand name |
+| `brand_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique brand identifier |
+| `brand_name` | VARCHAR(50) | UNIQUE, NOT NULL | Name of the product manufacturer or brand |
 
 ## `category`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `category_id` | INT (verify) | PK | Category identifier |
-| `category_name` | VARCHAR (verify) | — | Category name |
+| `category_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique category identifier |
+| `category_name` | VARCHAR(50) | UNIQUE, NOT NULL | Name of the product category |
 
 ## `product`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `product_id` | INT (verify) | PK | Product identifier |
-| `sku` | VARCHAR (verify) | UNIQUE | Stock keeping unit; unique |
-| `product_name` | VARCHAR (verify) | — | Product display name |
-| `description` | TEXT (verify) | — | Product description |
-| `image_url` | VARCHAR/TEXT (verify) | — | Product image path/URL |
-| `unit_price` | DECIMAL(10,2) (verify) | — | Current selling price |
-| `stock_quantity` | INT (verify) | — | Available stock units |
-| `is_active` | TINYINT/BOOLEAN (verify) | — | Visibility/availability flag |
-| `brand_id` | INT (verify) | FK → brand.brand_id | Linked brand |
-| `category_id` | INT (verify) | FK → category.category_id | Linked category |
+| `product_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique product identifier |
+| `sku` | VARCHAR(50) | UNIQUE, NOT NULL | Unique stock keeping unit code |
+| `product_name` | VARCHAR(150) | NOT NULL | Product display name |
+| `description` | TEXT | NULL, DEFAULT NULL | Product description and specifications |
+| `image_url` | VARCHAR(255) | NULL, DEFAULT NULL | Product image URL or file path |
+| `unit_price` | DECIMAL(10,2) | NOT NULL, CHECK (unit_price >= 0) | Current selling price |
+| `stock_quantity` | INT(11) | NOT NULL, DEFAULT 0, CHECK (stock_quantity >= 0) | Available inventory quantity |
+| `brand_id` | INT(11) | FK → brand.brand_id, NULL, DEFAULT NULL | Associated brand |
+| `category_id` | INT(11) | FK → category.category_id, NULL, DEFAULT NULL | Associated category |
+| `is_active` | TINYINT(1) | NOT NULL, DEFAULT 1 | Product availability: 1 = active, 0 = hidden |
+
 
 ## `cart`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `cart_id` | INT (verify) | PK | Cart identifier |
-| `user_id` | INT (verify) | FK → user.user_id; UNIQUE (per application) | Owner; one persistent cart per user |
+| `cart_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique shopping cart identifier |
+| `user_id` | INT(11) | FK → user.user_id, UNIQUE, NOT NULL, ON DELETE CASCADE | User who owns the shopping cart |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Cart creation timestamp |
+| `updated_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP, ON UPDATE CURRENT_TIMESTAMP | Last cart update timestamp |
 
 ## `cartitem`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `cart_item_id` | INT (verify) | PK | Cart line identifier |
-| `cart_id` | INT (verify) | FK → cart.cart_id | Parent cart |
-| `product_id` | INT (verify) | FK → product.product_id; ON DELETE CASCADE (previously configured) | Selected product |
-| `quantity` | INT (verify) | — | Requested units |
+| `cart_item_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique cart item identifier |
+| `cart_id` | INT(11) | FK → cart.cart_id, NOT NULL, ON DELETE CASCADE | Shopping cart containing this item |
+| `product_id` | INT(11) | FK → product.product_id, NOT NULL, ON DELETE CASCADE | Product added to the cart |
+| `quantity` | INT(11) | NOT NULL, DEFAULT 1, CHECK (quantity > 0) | Quantity of the selected product |
+| `created_at` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Time the product was added to the cart |
 
 ## `order`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `order_id` | INT (verify) | PK | Order identifier |
-| `user_id` | INT (verify) | FK → user.user_id | Buyer |
-| `order_date` | TIMESTAMP (verify) | — | Order placement time |
-| `total_amount` | DECIMAL(10,2) (verify) | — | Order total at checkout |
-| `shipping_address` | TEXT (verify) | — | Address used for this order |
-| `status` | ENUM (verify) | ENUM (as referenced in backend) | Order state: Pending/Paid/Shipped/Delivered/Cancelled |
+| `order_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique order identifier |
+| `user_id` | INT(11) | FK → user.user_id, NOT NULL, ON DELETE CASCADE | User who placed the order |
+| `order_date` | TIMESTAMP | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Date and time the order was placed |
+| `total_amount` | DECIMAL(10,2) | NOT NULL | Total amount recorded at checkout |
+| `shipping_address` | TEXT | NOT NULL | Shipping address for this order |
+| `status` | ENUM('Pending','Paid','Shipped','Delivered','Cancelled') | NOT NULL, DEFAULT 'Pending' | Current order status |
 
 ## `orderitem`
-
-| Attribute | Data type (pending verification) | Known keys / constraints | Description |
+| Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
-| `order_item_id` | INT (verify) | PK | Order line identifier |
-| `order_id` | INT (verify) | FK → order.order_id | Parent order |
-| `product_id` | INT (verify) | FK → product.product_id; ON DELETE SET NULL (previously configured) | Purchased product; may be NULL after deletion |
-| `product_name_at_purchase` | VARCHAR (verify) | — | Product name captured at checkout |
-| `sku_at_purchase` | VARCHAR (verify) | — | SKU captured at checkout |
-| `quantity` | INT (verify) | — | Quantity purchased |
-| `price_at_purchase` | DECIMAL(10,2) (verify) | — | Unit price captured at checkout |
-
-## Verify against the live database before submission
-
-In DBeaver, run each statement and update the data types, `NULL` / `NOT NULL`, defaults, `AUTO_INCREMENT`, indexes, `UNIQUE` keys, and `ON DELETE` actions using the actual definitions:
-
-```sql
-SHOW CREATE TABLE `user`;
-SHOW CREATE TABLE `brand`;
-SHOW CREATE TABLE `category`;
-SHOW CREATE TABLE `product`;
-SHOW CREATE TABLE `cart`;
-SHOW CREATE TABLE `cartitem`;
-SHOW CREATE TABLE `order`;
-SHOW CREATE TABLE `orderitem`;
-```
-
-**Notes:** Current code expects `cart.user_id` to be unique and uses an upsert implying a unique `(cart_id, product_id)` pair in `cartitem`; verify the actual constraints. The older `docs/Schema.md` describes six entities, not the current eight-table implementation, and must not be treated as authoritative schema evidence.
+| `order_item_id` | INT(11) | PK, AUTO_INCREMENT, NOT NULL | Unique order item identifier |
+| `order_id` | INT(11) | FK → order.order_id, NOT NULL | Parent order containing this item |
+| `product_id` | INT(11) | FK → product.product_id, NULL, DEFAULT NULL, ON DELETE SET NULL | Referenced product, if it still exists |
+| `quantity` | INT(11) | NOT NULL, CHECK (quantity > 0) | Number of units purchased |
+| `price_at_purchase` | DECIMAL(10,2) | NOT NULL, CHECK (price_at_purchase >= 0) | Unit price recorded at checkout |
+| `product_name_at_purchase` | VARCHAR(150) | NULL, DEFAULT NULL | Product name saved at the time of purchase |
+| `sku_at_purchase` | VARCHAR(50) | NULL, DEFAULT NULL | Product SKU saved at the time of purchase |

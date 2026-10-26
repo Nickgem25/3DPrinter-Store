@@ -1,6 +1,48 @@
+-- 3DPrinter-Store: sample catalog seed for a NEW / EMPTY database.
+-- Run AFTER "Create Database and Table.sql".
+-- Do NOT run on the existing populated production/development database:
+-- the SKU values are already present there.
+-- Brand/category IDs below reproduce the mappings referenced by the product
+-- samples; they are a reconstructed SAMPLE mapping, not a database export.
+-- Confirm IDs against live brand/category tables if exact restoration matters.
+-- To preserve real accounts, orders, stock, and other current data, use a
+-- sanitized MariaDB dump instead of this seed file.
+
 USE `3dprinter_store`;
+
 -- ============================================================
--- First 80 PRODUCTS (CAT26-001 to CAT26-080)
+-- SECTION 3A: BRANDS (must exist before products)
+-- Names/ID assignments required by the product records
+-- ============================================================
+INSERT INTO `brand` (`brand_id`, `brand_name`) VALUES
+  (1, 'Bambu Lab'),
+  (2, 'Creality'),
+  (3, 'eSUN'),
+  (5, 'Elegoo'),
+  (6, 'Anycubic'),
+  (7, 'Polymaker'),
+  (8, 'SUNLU'),
+  (9, 'Overture'),
+  (19, 'Generic'),
+  (21, 'Phrozen'),
+  (23, 'Prusa'),
+  (24, 'Flashforge');
+
+-- ============================================================
+-- SECTION 3B: CATEGORIES (must exist before products)
+-- ============================================================
+INSERT INTO `category` (`category_id`, `category_name`) VALUES
+  (1, 'FDM 3D Printers'),
+  (2, 'Filaments'),
+  (3, 'Nozzles & Hotends'),
+  (5, 'Resin 3D Printers'),
+  (7, 'Build Plates'),
+  (18, 'Tools & Hardware'),
+  (19, 'Resins & Consumables');
+
+-- ============================================================
+-- SECTION 3C: FIRST 80 PRODUCTS (CAT26-001 to CAT26-080)
+-- Uses brand/category name lookups, just as in your original file
 -- ============================================================
 INSERT INTO `product` (`sku`, `product_name`, `description`, `unit_price`, `stock_quantity`, `brand_id`, `category_id`)
 VALUES
@@ -86,7 +128,7 @@ VALUES
     ('CAT26-080', 'Aqua Grey 4K Resin 1kg', 'Sample store listing: Aqua Grey 4K Resin 1kg. Confirm compatibility and specifications before actual sale.', 39.99, 35, (SELECT `brand_id` FROM `brand` WHERE `brand_name` = 'Phrozen'), (SELECT `category_id` FROM `category` WHERE `category_name` = 'Resins & Consumables'));
 
 -- ============================================================
--- NEW 40 PRODUCTS (CAT26-081 to CAT26-120)
+-- SECTION 3D: NEW 40 PRODUCTS (CAT26-081 to CAT26-120)
 -- ============================================================
 INSERT INTO `product` (`sku`, `product_name`, `description`, `unit_price`, `stock_quantity`, `brand_id`, `category_id`)
 VALUES
@@ -130,3 +172,16 @@ VALUES
     ('CAT26-118', 'Water Washable Ceramic Grey Resin 1kg', 'Water-washable grey resin for detailed models', 32.99, 35, 5, 19),
     ('CAT26-119', 'ABS-Like Black Resin 1kg', 'Black ABS-like resin for functional prototypes', 34.99, 40, 6, 19),
     ('CAT26-120', 'Aqua Clear Resin 1kg', 'Clear photopolymer resin for compatible LCD printers', 39.99, 25, 21, 19);
+
+-- ============================================================
+-- SECTION 3E: IMAGE PATHS
+-- Actual image assets already live in frontend/public/product-images/
+-- ============================================================
+UPDATE `product`
+SET `image_url` = CONCAT('/product-images/', LOWER(`sku`), '.jpg')
+WHERE `sku` REGEXP '^CAT26-(0[0-9][0-9]|1[01][0-9]|120)$';
+
+-- Read-only validation (after running the seed on a new database):
+SELECT COUNT(*) AS seeded_catalog_products
+FROM `product`
+WHERE `sku` BETWEEN 'CAT26-001' AND 'CAT26-120';
