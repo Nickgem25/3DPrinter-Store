@@ -3,9 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
 
+// There are no product photos yet, so each card shows an emoji picked from the
+// category name. (Order matters: "Resin 3D Printers" must match 'resin' before 'printer'.)
+function categoryIcon(name = '') {
+    const n = name.toLowerCase();
+    if (n.includes('filament')) return '🧵';
+    if (n.includes('resin')) return '🧪';
+    if (n.includes('printer')) return '🖨️';
+    if (n.includes('nozzle') || n.includes('hotend')) return '🔥';
+    if (n.includes('plate')) return '🧱';
+    if (n.includes('fastener') || n.includes('insert')) return '🔩';
+    if (n.includes('tool')) return '🔧';
+    return '📦';
+}
+
 export default function Products() {
-    // Each useState is one piece of data the page remembers. When you call its
-    // setter (setProducts...), React redraws the page with the new value.
     const [products, setProducts] = useState([]);
     const [brands, setBrands] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -19,8 +31,6 @@ export default function Products() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // useEffect with [] runs ONCE, when the page first appears. This is where we
-    // load data from the backend. The 3 requests run at the same time.
     useEffect(() => {
         Promise.all([api.get('/products'), api.get('/brands'), api.get('/categories')])
             .then(([productList, brandList, categoryList]) => {
@@ -32,8 +42,6 @@ export default function Products() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Filtering happens in the browser: keep a product only if it passes every filter.
-    // (An empty filter means "don't filter on this".)
     const visibleProducts = products.filter(
         (p) =>
             (!brandId || p.brand_id === Number(brandId)) &&
@@ -42,7 +50,6 @@ export default function Products() {
     );
 
     async function addToCart(productId) {
-        // The cart needs a logged-in user, so send guests to the login page
         if (!user) {
             navigate('/login');
             return;
@@ -51,7 +58,7 @@ export default function Products() {
             await api.post('/cart/items', { product_id: productId, quantity: 1 });
             setMessage('Added to cart!');
         } catch (err) {
-            setMessage(err.message); // e.g. "Only 3 in stock..."
+            setMessage(err.message);
         }
     }
 
@@ -60,7 +67,11 @@ export default function Products() {
 
     return (
         <div>
-            <h1>Products</h1>
+            {/* Banner at the top of the home page (styles: .hero in index.css) */}
+            <section className="hero">
+                <h1>Print your next idea</h1>
+                <p>Printers, filaments and parts for makers, from first prints to full upgrades.</p>
+            </section>
 
             <div className="filters">
                 <input
@@ -85,20 +96,28 @@ export default function Products() {
             {message && <p className="notice">{message}</p>}
 
             <div className="grid">
-                {/* .map() turns each product in the list into a card. `key` helps React
-                    keep track of which card is which. */}
                 {visibleProducts.map((p) => (
                     <div className="card" key={p.product_id}>
-                        <h3>{p.product_name}</h3>
-                        <p className="muted">{p.brand_name} · {p.category_name}</p>
-                        <p>{p.description}</p>
-                        <p className="price">${p.unit_price}</p>
-                        <p className="muted">
-                            {p.stock_quantity > 0 ? `${p.stock_quantity} in stock` : 'Out of stock'}
-                        </p>
-                        <button disabled={p.stock_quantity === 0} onClick={() => addToCart(p.product_id)}>
-                            Add to cart
-                        </button>
+                        <div className="card-media">{categoryIcon(p.category_name)}</div>
+                        <div className="card-body">
+                            <h3>{p.product_name}</h3>
+                            <p className="muted">{p.brand_name} · {p.category_name}</p>
+                            <p className="card-desc">{p.description}</p>
+                            <p className="price">${p.unit_price}</p>
+
+                            {/* Three cases: sold out, running low (5 or fewer), plenty */}
+                            {p.stock_quantity === 0 ? (
+                                <p className="stock-low">Out of stock</p>
+                            ) : p.stock_quantity <= 5 ? (
+                                <p className="stock-low">Only {p.stock_quantity} left</p>
+                            ) : (
+                                <p className="muted">{p.stock_quantity} in stock</p>
+                            )}
+
+                            <button disabled={p.stock_quantity === 0} onClick={() => addToCart(p.product_id)}>
+                                Add to cart
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
