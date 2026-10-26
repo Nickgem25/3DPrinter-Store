@@ -1,7 +1,5 @@
 # 7. Data Dictionary — 3DPrinter-Store
 
-This working draft uses table/column names verified in current backend code, plus previously configured relationships. **Any type marked (verify) is a hypothesis, not output from `SHOW CREATE TABLE`**; confirm against the live MariaDB database before submission.
-
 ## `user`
 | Attribute | Data Type | Constraints | Description |
 |---|---|---|---|
