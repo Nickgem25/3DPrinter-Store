@@ -101,13 +101,8 @@ exports.createOrder = async (req, res) => {
         const orderId = orderResult.insertId;
 
         // ---- Step 6: save the line items (price at this moment) and reduce stock ----
+
         for (const item of cartItems) {
-            await connection.query(
-                'INSERT INTO orderitem (order_id, product_id, quantity, price_at_purchase) VALUES (?, ?, ?, ?)',
-                [orderId, item.product_id, item.quantity, item.unit_price]
-            );
-
-
             await connection.query(
                 `INSERT INTO orderitem
                  (order_id, product_id, product_name_at_purchase,
@@ -122,7 +117,13 @@ exports.createOrder = async (req, res) => {
                     item.unit_price
                 ]
             );
+
+            await connection.query(
+                'UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?',
+                [item.quantity, item.product_id]
+            );
         }
+
 
         // ---- Step 7: empty the cart and make everything permanent ----
         await connection.query('DELETE FROM cartitem WHERE cart_id = ?', [cartId]);

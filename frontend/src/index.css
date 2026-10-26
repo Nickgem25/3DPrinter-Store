@@ -2,31 +2,31 @@
    COLOR PALETTE  -  change a color here and the whole site updates.
    "var(--name)" in the rules below reads these values.
    ===================================================================== */
+
 :root {
-    --bg: #f6f3ee;
-    /* warm off-white page background */
-    --surface: #ffffff;
-    /* cards, tables, forms */
-    --ink: #1b1f27;
-    /* dark charcoal: navbar, hero, main text */
-    --ink-soft: #2a303c;
-    --text: #1b1f27;
-    --muted: #6b7280;
-    --border: #e7e2d9;
-    --border-strong: #d3ccc0;
+    color-scheme: dark;
 
-    --primary: #ff6b2c;
-    /* "hot end" orange: buttons, accents */
-    --primary-dark: #e4561a;
-    /* orange when hovered */
-    --accent: #14b8a6;
-    /* teal: success messages */
-    --danger: #d64545;
-    /* red: errors, delete, low stock */
+    /* Violet Eclipse palette */
+    --bg: #100F17;
+    --surface: #201C2B;
+    --ink: #100F17;
+    --ink-soft: #201C2B;
+    --text: #F5F3FF;
+    --muted: #B9B2C9;
+    --border: #383048;
+    --border-strong: #554A67;
 
-    --radius: 12px;
-    --shadow: 0 1px 2px rgba(27, 31, 39, 0.06), 0 4px 14px rgba(27, 31, 39, 0.06);
+    /* Actions */
+    --primary: #A78BFA;
+    --primary-dark: #9273EC;
+    --accent: #A78BFA;
+    --danger: #F87171;
+
+    /* Design details */
+    --radius: 14px;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 }
+
 
 * {
     box-sizing: border-box;
@@ -315,4 +315,106 @@ textarea:focus {
     border-left: 4px solid var(--accent);
     padding: 10px 14px;
     border-radius: 6px;
+}
+
+/* ===== Violet Eclipse — global refinements ===== */
+
+a {
+    color: var(--primary);
+}
+
+a:hover {
+    color: #C4B5FD;
+}
+
+button {
+    color: #100F17;
+}
+
+button:hover:not(:disabled) {
+    background: #C4B5FD;
+}
+
+button:disabled {
+    background: #383048;
+    color: #A59BAF;
+}
+
+button.danger {
+    background: #B91C1C;
+    color: #FFFFFF;
+}
+
+button.danger:hover:not(:disabled) {
+    background: #DC2626;
+}
+
+button.secondary {
+    background: #383048;
+    color: #F5F3FF;
+}
+
+button.secondary:hover:not(:disabled) {
+    background: #554A67;
+}
+
+.navbar {
+    background: #17131F;
+    border-bottom: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.brand-mark {
+    color: #100F17;
+}
+
+.navbar button {
+    color: var(--text);
+}
+
+.navbar button:hover:not(:disabled) {
+    background: var(--border);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.22);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #A59BAF;
+}
+
+.hero {
+    background:
+        radial-gradient(
+            circle at 92% 10%,
+            rgba(167, 139, 250, 0.16),
+            transparent 45%
+        ),
+        linear-gradient(135deg, #201C2B, #17131F);
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.hero p {
+    color: var(--muted);
+}
+
+.card:hover {
+    border-color: #776299;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+.notice {
+    background: #292337;
+    color: var(--text);
+    border-left: 4px solid var(--accent);
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
 }

@@ -14,7 +14,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--muted);
-    background: #faf8f4;
+    background: #292337;
 }
 .cart-table th,
 .cart-table td {
@@ -22,7 +22,9 @@
     text-align: left;
     border-bottom: 1px solid var(--border);
 }
-.cart-table tbody tr:hover { background: #fffaf5; }
+.cart-table tbody tr:hover {
+    background: #30283D;
+}
 .cart-table tbody tr:last-child td { border-bottom: none; }
 .cart-table td button { padding: 4px 10px; }
 
